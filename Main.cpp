@@ -13,8 +13,8 @@
 
 //SETS THE WINDOW SIZE
 int
-CurrentWidth = 1000,
-CurrentHeight = 800,
+CurrentWidth = 800,
+CurrentHeight = 600,
 WindowHandle = 0;
 
 GLuint
