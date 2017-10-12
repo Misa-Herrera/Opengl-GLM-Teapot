@@ -4,6 +4,7 @@
 #include <string.h>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
+#include <GLFW\glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/vec3.hpp> // glm::vec3
 #include <glm/vec4.hpp> // glm::vec4
