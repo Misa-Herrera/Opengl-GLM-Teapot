@@ -60,63 +60,10 @@ void Initialize(int, char*[]);
 void InitWindow(int, char*[]);
 void ResizeFunction(int, int);
 void RenderFunction(void);
-void CreateVBO(void);
-void CreateShaders(void);
-
-int main(int argc, char* argv[])
-{
-	Initialize(argc, argv);
-	glutMainLoop();
-	exit(EXIT_SUCCESS);
-}
-
-void Initialize(int argc, char* argv[])
-{
-	GLenum GlewInitResult;
-
-	glewExperimental = GL_TRUE;
-	InitWindow(argc, argv);
-
-	GlewInitResult = glewInit();
-	CreateShaders();
-	CreateVBO();
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);  // SETS BACKGROUND COLOR TO BLACK
-}
-
-void InitWindow(int argc, char* argv[])
-{
-	glutInit(&argc, argv);
-	glutSetOption(
-		GLUT_ACTION_ON_WINDOW_CLOSE,
-		GLUT_ACTION_GLUTMAINLOOP_RETURNS
-	);
-	//SETS THE WINDOW
-	glutInitWindowSize(CurrentWidth, CurrentHeight);
-	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
-	WindowHandle = glutCreateWindow(WINDOW_TITLE_PREFIX);
-	glutDisplayFunc(RenderFunction);
-}
-
-void ResizeFunction(int Width, int Height)
-{
-	CurrentWidth = Width;
-	CurrentHeight = Height;
-	glViewport(0, 0, CurrentWidth, CurrentHeight);
-}
-
-void RenderFunction(void)
-{
-
-	//	RENDERS OUR SHAPE ACCORDING TO THE DRAWARRAYS SPECIFICATION
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 896);
-	glutSwapBuffers();
-}
-
 void CreateVBO(void)
 {
 
-	// SETS POINTS AND COLORS FOR SQUARE
+	// SETS POINTS AND COLORS
 	GLfloat Vertices[] = {
 		1.400000,2.250000,0.000000,
 		1.291500,2.250000,0.549500,
@@ -2806,10 +2753,8 @@ void CreateVBO(void)
 		1.066641,2.339063,-0.453828,
 		1.300000,2.250000,0.000000,
 		1.199250,2.250000,-0.510250
-
-
 	};
-GLfloat Colors[] = {
+	GLfloat Colors[] = {
 		0.810625,0.554638,0.750895,1.000000,
 		0.929004,0.635635,0.860552,1.000000,
 		0.753897,0.515824,0.698347,1.000000,
@@ -5517,6 +5462,59 @@ GLfloat Colors[] = {
 	glEnableVertexAttribArray(1);
 
 }
+void CreateShaders(void);
+
+int main(int argc, char* argv[])
+{
+	Initialize(argc, argv);
+	glutMainLoop();
+	exit(EXIT_SUCCESS);
+}
+
+void Initialize(int argc, char* argv[])
+{
+	GLenum GlewInitResult;
+
+	glewExperimental = GL_TRUE;
+	InitWindow(argc, argv);
+
+	GlewInitResult = glewInit();
+	CreateShaders();
+	CreateVBO();
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);  // SETS BACKGROUND COLOR TO BLACK
+}
+
+void InitWindow(int argc, char* argv[])
+{
+	glutInit(&argc, argv);
+	glutSetOption(
+		GLUT_ACTION_ON_WINDOW_CLOSE,
+		GLUT_ACTION_GLUTMAINLOOP_RETURNS
+	);
+	//SETS THE WINDOW
+	glutInitWindowSize(CurrentWidth, CurrentHeight);
+	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
+	WindowHandle = glutCreateWindow(WINDOW_TITLE_PREFIX);
+	glutReshapeFunc(ResizeFunction);
+	glutDisplayFunc(RenderFunction);
+}
+
+void ResizeFunction(int Width, int Height)
+{
+	CurrentWidth = Width;
+	CurrentHeight = Height;
+	glViewport(0,0, CurrentWidth, CurrentHeight);
+}
+
+void RenderFunction(void)
+{
+
+	//	RENDERS OUR SHAPE ACCORDING TO THE DRAWARRAYS SPECIFICATION
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 896);
+	glutSwapBuffers();
+}
+
 void CreateShaders(void)
 {
 
