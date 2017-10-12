@@ -60,6 +60,83 @@ void Initialize(int, char*[]);
 void InitWindow(int, char*[]);
 void ResizeFunction(int, int);
 void RenderFunction(void);
+void CreateVBO(void);
+void CreateShaders(void);
+
+
+
+
+int main(int argc, char* argv[])
+{
+	Initialize(argc, argv);
+	glutMainLoop();
+	exit(EXIT_SUCCESS);
+}
+
+void Initialize(int argc, char* argv[])
+{
+	GLenum GlewInitResult;
+
+	glewExperimental = GL_TRUE;
+	InitWindow(argc, argv);
+
+	GlewInitResult = glewInit();
+	CreateShaders();
+	CreateVBO();
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);  // SETS BACKGROUND COLOR TO BLACK
+}
+
+void InitWindow(int argc, char* argv[])
+{
+	glutInit(&argc, argv);
+	glutSetOption(
+		GLUT_ACTION_ON_WINDOW_CLOSE,
+		GLUT_ACTION_GLUTMAINLOOP_RETURNS
+	);
+	//SETS THE WINDOW
+	glutInitWindowSize(CurrentWidth, CurrentHeight);
+	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
+	WindowHandle = glutCreateWindow(WINDOW_TITLE_PREFIX);
+	glutReshapeFunc(ResizeFunction);
+	glutDisplayFunc(RenderFunction);
+}
+
+void ResizeFunction(int Width, int Height)
+{
+	CurrentWidth = Width;
+	CurrentHeight = Height;
+	glViewport(0, 0, CurrentWidth, CurrentHeight);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(-8.0f, 8.0f, -6.0f, 6.0f, 1.0f, 100.0f);
+	
+}
+
+void RenderFunction(void)
+{
+
+	//	RENDERS OUR SHAPE ACCORDING TO THE DRAWARRAYS SPECIFICATION
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 896);
+
+	glm::mat4 ProjectionMatrix = glm::ortho(-8.0f, 8.0f, -6.0f, 6.0f, 1.0f, 100.0f);
+	glm::mat4 ViewMatrix = glm::lookAt(0.0f, 0.0f, 10.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+
+
+	glm::mat4 Transform = ProjectionMatrix * ViewMatrix;
+	
+	// Model matrix : an identity matrix (model will be at the origin)
+	glm::mat4 Model = glm::mat4(1.0f);
+	// Get a handle for our "MVP" uniform
+	GLuint MatrixID = glGetUniformLocation(ProgramId, "MVP");
+	glm::mat4 MVP = Transform * Model;
+	// Send our transformation to the currently bound shader,
+	// in the "MVP" uniform
+	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
+
+
+	glutSwapBuffers();
+}
 void CreateVBO(void)
 {
 
@@ -5445,6 +5522,7 @@ void CreateVBO(void)
 		0.437293,0.299200,0.405071,1.000000
 	};
 
+
 	//BUFFERS THE VERTICES AND COLORS
 	glGenVertexArrays(1, &VaoId);
 	glBindVertexArray(VaoId);
@@ -5460,61 +5538,7 @@ void CreateVBO(void)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Colors), Colors, GL_STATIC_DRAW);
 	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(1);
-
 }
-void CreateShaders(void);
-
-int main(int argc, char* argv[])
-{
-	Initialize(argc, argv);
-	glutMainLoop();
-	exit(EXIT_SUCCESS);
-}
-
-void Initialize(int argc, char* argv[])
-{
-	GLenum GlewInitResult;
-
-	glewExperimental = GL_TRUE;
-	InitWindow(argc, argv);
-
-	GlewInitResult = glewInit();
-	CreateShaders();
-	CreateVBO();
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);  // SETS BACKGROUND COLOR TO BLACK
-}
-
-void InitWindow(int argc, char* argv[])
-{
-	glutInit(&argc, argv);
-	glutSetOption(
-		GLUT_ACTION_ON_WINDOW_CLOSE,
-		GLUT_ACTION_GLUTMAINLOOP_RETURNS
-	);
-	//SETS THE WINDOW
-	glutInitWindowSize(CurrentWidth, CurrentHeight);
-	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
-	WindowHandle = glutCreateWindow(WINDOW_TITLE_PREFIX);
-	glutReshapeFunc(ResizeFunction);
-	glutDisplayFunc(RenderFunction);
-}
-
-void ResizeFunction(int Width, int Height)
-{
-	CurrentWidth = Width;
-	CurrentHeight = Height;
-	glViewport(0,0, CurrentWidth, CurrentHeight);
-}
-
-void RenderFunction(void)
-{
-
-	//	RENDERS OUR SHAPE ACCORDING TO THE DRAWARRAYS SPECIFICATION
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 896);
-	glutSwapBuffers();
-}
-
 void CreateShaders(void)
 {
 
