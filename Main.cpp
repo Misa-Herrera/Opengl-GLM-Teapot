@@ -28,9 +28,9 @@ ColorBufferId;
 
 const GLchar* VertexShader =
 {
-	"#version 400\n"\
+	"#version 150\n"\
 
-	"layout(location=-1) in vec4 in_Position;\n"\
+	"layout(location=0) in vec4 in_Position;\n"\
 	"layout(location=1) in vec4 in_Color;\n"\
 	"out vec4 ex_Color;\n"\
 
@@ -43,7 +43,7 @@ const GLchar* VertexShader =
 
 const GLchar* FragmentShader =
 {
-	"#version 400\n"\
+	"#version 150\n"\
 
 	"in vec4 ex_Color;\n"\
 	"out vec4 out_Color;\n"\
@@ -60,8 +60,8 @@ void Initialize(int, char*[]);
 void InitWindow(int, char*[]);
 void ResizeFunction(int, int);
 void RenderFunction(void);
-void CreateVBO(void);
 void CreateShaders(void);
+void CreateVBO(void);
 
 
 int main(int argc, char* argv[])
@@ -131,7 +131,6 @@ void RenderFunction(void)
 	glm::mat4 MVP = Transform * Model;
 
 	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
-
 
 	glutSwapBuffers();
 }
@@ -5554,5 +5553,6 @@ void CreateShaders(void)
 	glAttachShader(ProgramId, FragmentShaderId);
 	glLinkProgram(ProgramId);
 	glUseProgram(ProgramId);
+	void CreateVBO(void);
 
 }
