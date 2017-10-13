@@ -28,7 +28,7 @@ ColorBufferId;
 
 const GLchar* VertexShader =
 {
-	"#version 150\n"\
+	"#version 400\n"\
 
 	"layout(location=0) in vec4 in_Position;\n"\
 	"layout(location=1) in vec4 in_Color;\n"\
@@ -43,7 +43,7 @@ const GLchar* VertexShader =
 
 const GLchar* FragmentShader =
 {
-	"#version 150\n"\
+	"#version 400\n"\
 
 	"in vec4 ex_Color;\n"\
 	"out vec4 out_Color;\n"\
@@ -53,7 +53,6 @@ const GLchar* FragmentShader =
 	"  out_Color = ex_Color;\n"\
 	"}\n"
 };
-
 
 //CALLING FUNCTIONS TO CREATE DRAWING
 void Initialize(int, char*[]);
@@ -116,19 +115,18 @@ void RenderFunction(void)
 {
 
 	//	RENDERS OUR SHAPE ACCORDING TO THE DRAWARRAYS SPECIFICATION
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 896*3);
 
 	glm::mat4 ProjectionMatrix = glm::ortho(-8.0f, 8.0f, -6.0f, 6.0f, 1.0f, 100.0f);
 	glm::mat4 ViewMatrix = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f,0.0f,0.0f), glm::vec3(0.0f,1.0f,0.0f));
 
-
-	glm::mat4 Transform = ProjectionMatrix * ViewMatrix;
-
 	glm::mat4 Model = glm::mat4(1.0f);
 
 	GLuint MatrixID = glGetUniformLocation(ProgramId, "MVP");
-	glm::mat4 MVP = Transform * Model;
+	glm::mat4 MVP = ProjectionMatrix * ViewMatrix * Model;
 
 	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
@@ -5533,7 +5531,7 @@ void CreateVBO(void)
 	glGenBuffers(1, &ColorBufferId);
 	glBindBuffer(GL_ARRAY_BUFFER, ColorBufferId);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Colors), Colors, GL_STATIC_DRAW);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(1);
 }
 void CreateShaders(void)
