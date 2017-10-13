@@ -30,7 +30,7 @@ const GLchar* VertexShader =
 {
 	"#version 400\n"\
 
-	"layout(location=0) in vec4 in_Position;\n"\
+	"layout(location=-1) in vec4 in_Position;\n"\
 	"layout(location=1) in vec4 in_Color;\n"\
 	"out vec4 ex_Color;\n"\
 
@@ -62,8 +62,6 @@ void ResizeFunction(int, int);
 void RenderFunction(void);
 void CreateVBO(void);
 void CreateShaders(void);
-
-
 
 
 int main(int argc, char* argv[])
@@ -100,16 +98,16 @@ void InitWindow(int argc, char* argv[])
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 	WindowHandle = glutCreateWindow(WINDOW_TITLE_PREFIX);
 	glutReshapeFunc(ResizeFunction);
-	glutDisplayFunc(RenderFunction);
 }
 
 void ResizeFunction(int Width, int Height)
 {
 	CurrentWidth = Width;
 	CurrentHeight = Height;
-	glViewport(0, 0, CurrentWidth, CurrentHeight);
+	glViewport(0,0, CurrentWidth, CurrentHeight);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
+	glOrtho(-8.0f, 8.0f, -6.0f, 6.0f, 1.0f, 100.0f);
 	glOrtho(-8.0f, 8.0f, -6.0f, 6.0f, 1.0f, 100.0f);
 	
 }
@@ -119,21 +117,19 @@ void RenderFunction(void)
 
 	//	RENDERS OUR SHAPE ACCORDING TO THE DRAWARRAYS SPECIFICATION
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 896);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 896*3);
 
 	glm::mat4 ProjectionMatrix = glm::ortho(-8.0f, 8.0f, -6.0f, 6.0f, 1.0f, 100.0f);
 	glm::mat4 ViewMatrix = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f,0.0f,0.0f), glm::vec3(0.0f,1.0f,0.0f));
 
 
 	glm::mat4 Transform = ProjectionMatrix * ViewMatrix;
-	
-	// Model matrix : an identity matrix (model will be at the origin)
+
 	glm::mat4 Model = glm::mat4(1.0f);
-	// Get a handle for our "MVP" uniform
+
 	GLuint MatrixID = glGetUniformLocation(ProgramId, "MVP");
 	glm::mat4 MVP = Transform * Model;
-	// Send our transformation to the currently bound shader,
-	// in the "MVP" uniform
+
 	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
 
