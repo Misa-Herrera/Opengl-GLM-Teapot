@@ -120,7 +120,7 @@ void RenderFunction(void)
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 896);
 
 	glm::mat4 ProjectionMatrix = glm::ortho(-8.0f, 8.0f, -6.0f, 6.0f, 1.0f, 100.0f);
-	glm::mat4 ViewMatrix = glm::lookAt(0.0f, 0.0f, 10.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+	glm::mat4 ViewMatrix = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f,0.0f,0.0f), glm::vec3(0.0f,1.0f,0.0f));
 
 
 	glm::mat4 Transform = ProjectionMatrix * ViewMatrix;
