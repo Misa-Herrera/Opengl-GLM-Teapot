@@ -69,6 +69,8 @@ void CreateShaders(void);
 int main(int argc, char* argv[])
 {
 	Initialize(argc, argv);
+	
+	glutDisplayFunc(CreateShaders);
 	glutMainLoop();
 	exit(EXIT_SUCCESS);
 }
