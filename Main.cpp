@@ -30,7 +30,7 @@ const GLchar* VertexShader =
 {
 	"#version 400\n"\
 
-	"layout(location=0) in vec4 in_Position;\n"\
+	"layout(location=0) in vec3 in_Position;\n"\
 	"layout(location=1) in vec4 in_Color;\n"\
 	"out vec4 ex_Color;\n"\
 
