@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
 {
 	Initialize(argc, argv);
 	
-	glutDisplayFunc(CreateShaders);
+	glutDisplayFunc(RenderFunction);
 	glutMainLoop();
 	exit(EXIT_SUCCESS);
 }
