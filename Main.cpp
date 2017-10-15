@@ -116,9 +116,7 @@ void ResizeFunction(int Width, int Height)
 {
 	CurrentWidth = Width;
 	CurrentHeight = Height;
-	glViewport(0, 0, CurrentWidth, CurrentHeight);
-	
-
+	//
 }
 
 void RenderFunction(void)
