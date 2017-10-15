@@ -28,30 +28,43 @@ ColorBufferId;
 
 const GLchar* VertexShader =
 {
-	"#version 400\n"\
+	"#version 400"
 
-	"layout(location=0) in vec4 in_Position;\n"\
-	"layout(location=1) in vec4 in_Color;\n"\
-	"out vec4 ex_Color;\n"\
+	// Input vertex data, different for all executions of this shader.
+	"layout(location = 0) in vec3 vertexPosition_modelspace;"
+"layout(location = 1) in vec4 vertexColor;"
 
-	"void main(void)\n"\
-	"{\n"\
-	"  gl_Position = vec4(in_Position,1.0);\n"\
-	"  ex_Color = in_Color;\n"\
-	"}\n"
+// Output data ; will be interpolated for each fragment.
+"out vec4 fragmentColor;"
+// Values that stay constant for the whole mesh.
+"uniform mat4 MVP;"
+
+	"void main() {"
+
+	// Output position of the vertex, in clip space : MVP * position
+	"gl_Position = MVP * vec3(vertexPosition_modelspace,1);"
+
+	// The color of each vertex will be interpolated
+	// to produce the color of each fragment
+	"fragmentColor = vertexColor;"
+
 };
 
 const GLchar* FragmentShader =
 {
-	"#version 400\n"\
+	"#version 400"
 
-	"in vec4 ex_Color;\n"\
-	"out vec4 out_Color;\n"\
+	// Interpolated values from the vertex shaders
+	"in vec4 fragmentColor;"
 
-	"void main(void)\n"\
-	"{\n"\
-	"  out_Color = ex_Color;\n"\
-	"}\n"
+	// Ouput data
+	"out vec4 color;"
+
+	"void main() {"
+
+	// Output color = color specified in the vertex shader, 
+	// interpolated between all 3 surrounding vertices
+	"color = fragmentColor;"
 };
 
 //CALLING FUNCTIONS TO CREATE DRAWING
@@ -66,7 +79,7 @@ void CreateVBO(void);
 int main(int argc, char* argv[])
 {
 	Initialize(argc, argv);
-	
+
 	glutDisplayFunc(RenderFunction);
 	glutMainLoop();
 	exit(EXIT_SUCCESS);
@@ -103,33 +116,28 @@ void ResizeFunction(int Width, int Height)
 {
 	CurrentWidth = Width;
 	CurrentHeight = Height;
-	glViewport(0,0, CurrentWidth, CurrentHeight);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(-8.0f, 8.0f, -6.0f, 6.0f, 1.0f, 100.0f);
-	glOrtho(-8.0f, 8.0f, -6.0f, 6.0f, 1.0f, 100.0f);
+	glViewport(0, 0, CurrentWidth, CurrentHeight);
 	
+
 }
 
 void RenderFunction(void)
 {
 
 	//	RENDERS OUR SHAPE ACCORDING TO THE DRAWARRAYS SPECIFICATION
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
+	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 896*3);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 896 * 3);
+	//glEnable(GL_DEPTH_TEST);
+	//glDepthFunc(GL_LESS);
 
 	glm::mat4 ProjectionMatrix = glm::ortho(-8.0f, 8.0f, -6.0f, 6.0f, 1.0f, 100.0f);
-	glm::mat4 ViewMatrix = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f,0.0f,0.0f), glm::vec3(0.0f,1.0f,0.0f));
+	glm::mat4 ViewMatrix = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 	glm::mat4 Model = glm::mat4(1.0f);
-
 	GLuint MatrixID = glGetUniformLocation(ProgramId, "MVP");
 	glm::mat4 MVP = ProjectionMatrix * ViewMatrix * Model;
-
 	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
-
 	glutSwapBuffers();
 }
 void CreateVBO(void)
@@ -5531,7 +5539,7 @@ void CreateVBO(void)
 	glGenBuffers(1, &ColorBufferId);
 	glBindBuffer(GL_ARRAY_BUFFER, ColorBufferId);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Colors), Colors, GL_STATIC_DRAW);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(1);
 }
 void CreateShaders(void)
