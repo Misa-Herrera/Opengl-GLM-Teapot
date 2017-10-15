@@ -32,12 +32,12 @@ const GLchar* VertexShader =
 
 	// Input vertex data, different for all executions of this shader.
 	"layout(location = 0) in vec3 vertexPosition_modelspace;"
-"layout(location = 1) in vec4 vertexColor;"
+	"layout(location = 1) in vec4 vertexColor;"
 
-// Output data ; will be interpolated for each fragment.
-"out vec4 fragmentColor;"
-// Values that stay constant for the whole mesh.
-"uniform mat4 MVP;"
+	// Output data ; will be interpolated for each fragment.
+	"out vec4 fragmentColor;"
+	// Values that stay constant for the whole mesh.
+	"uniform mat4 MVP;"
 
 	"void main() {"
 
@@ -116,14 +116,14 @@ void ResizeFunction(int Width, int Height)
 {
 	CurrentWidth = Width;
 	CurrentHeight = Height;
-	//
+	glViewport(0, 0, CurrentWidth, CurrentHeight);
 }
 
 void RenderFunction(void)
 {
 
 	//	RENDERS OUR SHAPE ACCORDING TO THE DRAWARRAYS SPECIFICATION
-	
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 896 * 3);
 	//glEnable(GL_DEPTH_TEST);
