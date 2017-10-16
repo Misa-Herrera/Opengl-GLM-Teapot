@@ -1,1 +1,0 @@
-# Opengl-GLM-Teapot
