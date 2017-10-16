@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -10,139 +9,90 @@
 #include <glm/vec4.hpp> // glm::vec4
 #include <glm/mat4x4.hpp> // glm::mat4
 #include <glm/gtc/matrix_transform.hpp>
-#define WINDOW_TITLE_PREFIX "test"
+GLFWwindow* window;
 
-//SETS THE WINDOW SIZE
-int
-CurrentWidth = 800,
-CurrentHeight = 600,
-WindowHandle = 0;
+// Include GLM
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+using namespace glm;
 
-GLuint
-VertexShaderId,
-FragmentShaderId,
-ProgramId,
-VaoId,
-VboId,
-ColorBufferId;
+#include <shader.hpp>
 
-const GLchar* VertexShader =
+int main(void)
 {
-	"#version 400"
+	// Initialise GLFW
+	if (!glfwInit())
+	{
+		fprintf(stderr, "Failed to initialize GLFW\n");
+		getchar();
+		return -1;
+	}
 
-	// Input vertex data, different for all executions of this shader.
-	"layout(location = 0) in vec3 vertexPosition_modelspace;"
-	"layout(location = 1) in vec4 vertexColor;"
+	glfwWindowHint(GLFW_SAMPLES, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	// Output data ; will be interpolated for each fragment.
-	"out vec4 fragmentColor;"
-	// Values that stay constant for the whole mesh.
-	"uniform mat4 MVP;"
+	// Open a window and create its OpenGL context
+	window = glfwCreateWindow(1024, 768, "Tutorial 04 - Colored Cube", NULL, NULL);
+	if (window == NULL) {
+		fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
+		getchar();
+		glfwTerminate();
+		return -1;
+	}
+	glfwMakeContextCurrent(window);
 
-	"void main() {"
+	// Initialize GLEW
+	glewExperimental = true; // Needed for core profile
+	if (glewInit() != GLEW_OK) {
+		fprintf(stderr, "Failed to initialize GLEW\n");
+		getchar();
+		glfwTerminate();
+		return -1;
+	}
 
-	// Output position of the vertex, in clip space : MVP * position
-	"gl_Position = MVP * vec3(vertexPosition_modelspace,1);"
+	// Ensure we can capture the escape key being pressed below
+	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
-	// The color of each vertex will be interpolated
-	// to produce the color of each fragment
-	"fragmentColor = vertexColor;"
+	// Dark blue background
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-};
+	// Enable depth test
+	glEnable(GL_DEPTH_TEST);
+	// Accept fragment if it closer to the camera than the former one
+	glDepthFunc(GL_LESS);
 
-const GLchar* FragmentShader =
-{
-	"#version 400"
+	GLuint VertexArrayID;
+	glGenVertexArrays(1, &VertexArrayID);
+	glBindVertexArray(VertexArrayID);
 
-	// Interpolated values from the vertex shaders
-	"in vec4 fragmentColor;"
+	// Create and compile our GLSL program from the shaders
+	GLuint programID = LoadShaders("TransformVertexShader.vertexshader", "ColorFragmentShader.fragmentshader");
 
-	// Ouput data
-	"out vec4 color;"
+	// Get a handle for our "MVP" uniform
+	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
 
-	"void main() {"
-
-	// Output color = color specified in the vertex shader, 
-	// interpolated between all 3 surrounding vertices
-	"color = fragmentColor;"
-};
-
-//CALLING FUNCTIONS TO CREATE DRAWING
-void Initialize(int, char*[]);
-void InitWindow(int, char*[]);
-void ResizeFunction(int, int);
-void RenderFunction(void);
-void CreateShaders(void);
-void CreateVBO(void);
+	// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
+	glm::mat4 Projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+	// Camera matrix
 
 
-int main(int argc, char* argv[])
-{
-	Initialize(argc, argv);
 
-	glutDisplayFunc(RenderFunction);
-	glutMainLoop();
-	exit(EXIT_SUCCESS);
-}
+	glm::mat4 View = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-void Initialize(int argc, char* argv[])
-{
-	GLenum GlewInitResult;
 
-	glewExperimental = GL_TRUE;
-	InitWindow(argc, argv);
 
-	GlewInitResult = glewInit();
-	CreateShaders();
-	CreateVBO();
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);  // SETS BACKGROUND COLOR TO BLACK
-}
 
-void InitWindow(int argc, char* argv[])
-{
-	glutInit(&argc, argv);
-	glutSetOption(
-		GLUT_ACTION_ON_WINDOW_CLOSE,
-		GLUT_ACTION_GLUTMAINLOOP_RETURNS
-	);
-	//SETS THE WINDOW
-	glutInitWindowSize(CurrentWidth, CurrentHeight);
-	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
-	WindowHandle = glutCreateWindow(WINDOW_TITLE_PREFIX);
-	glutReshapeFunc(ResizeFunction);
-}
-
-void ResizeFunction(int Width, int Height)
-{
-	CurrentWidth = Width;
-	CurrentHeight = Height;
-	glViewport(0, 0, CurrentWidth, CurrentHeight);
-}
-
-void RenderFunction(void)
-{
-
-	//	RENDERS OUR SHAPE ACCORDING TO THE DRAWARRAYS SPECIFICATION
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 896 * 3);
-	//glEnable(GL_DEPTH_TEST);
-	//glDepthFunc(GL_LESS);
-
-	glm::mat4 ProjectionMatrix = glm::ortho(-8.0f, 8.0f, -6.0f, 6.0f, 1.0f, 100.0f);
-	glm::mat4 ViewMatrix = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
+	// Model matrix : an identity matrix (model will be at the origin)
 	glm::mat4 Model = glm::mat4(1.0f);
-	GLuint MatrixID = glGetUniformLocation(ProgramId, "MVP");
-	glm::mat4 MVP = ProjectionMatrix * ViewMatrix * Model;
-	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
-	glutSwapBuffers();
-}
-void CreateVBO(void)
-{
+	// Our ModelViewProjection : multiplication of our 3 matrices
+	glm::mat4 MVP = Projection * View * Model; // Remember, matrix multiplication is the other way around
 
-	// SETS POINTS AND COLORS
-	GLfloat Vertices[] = {
+											   // Our vertices. Tree consecutive floats give a 3D vertex; Three consecutive vertices give a triangle.
+											   // A cube has 6 faces with 2 triangles each, so this makes 6*2=12 triangles, and 12*3 vertices
+	static const GLfloat g_vertex_buffer_data[] = {
 		1.400000,2.250000,0.000000,
 		1.291500,2.250000,0.549500,
 		1.273482,2.323828,0.541834,
@@ -2832,7 +2782,9 @@ void CreateVBO(void)
 		1.300000,2.250000,0.000000,
 		1.199250,2.250000,-0.510250
 	};
-	GLfloat Colors[] = {
+
+	// One color for each vertex. They were generated randomly.
+	static const GLfloat g_color_buffer_data[] = {
 		0.810625,0.554638,0.750895,1.000000,
 		0.929004,0.635635,0.860552,1.000000,
 		0.753897,0.515824,0.698347,1.000000,
@@ -5523,40 +5475,75 @@ void CreateVBO(void)
 		0.437293,0.299200,0.405071,1.000000
 	};
 
+	GLuint vertexbuffer;
+	glGenBuffers(1, &vertexbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
-	//BUFFERS THE VERTICES AND COLORS
-	glGenVertexArrays(1, &VaoId);
-	glBindVertexArray(VaoId);
+	GLuint colorbuffer;
+	glGenBuffers(1, &colorbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data), g_color_buffer_data, GL_STATIC_DRAW);
 
-	glGenBuffers(1, &VboId);
-	glBindBuffer(GL_ARRAY_BUFFER, VboId);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(0);
+	do {
 
-	glGenBuffers(1, &ColorBufferId);
-	glBindBuffer(GL_ARRAY_BUFFER, ColorBufferId);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Colors), Colors, GL_STATIC_DRAW);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(1);
+		// Clear the screen
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// Use our shader
+		glUseProgram(programID);
+
+		// Send our transformation to the currently bound shader, 
+		// in the "MVP" uniform
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
+
+		// 1rst attribute buffer : vertices
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+		glVertexAttribPointer(
+			0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
+			3,                  // size
+			GL_FLOAT,           // type
+			GL_FALSE,           // normalized?
+			0,                  // stride
+			(void*)0            // array buffer offset
+		);
+
+		// 2nd attribute buffer : colors
+		glEnableVertexAttribArray(1);
+		glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+		glVertexAttribPointer(
+			1,                                // attribute. No particular reason for 1, but must match the layout in the shader.
+			4,                                // size
+			GL_FLOAT,                         // type
+			GL_FALSE,                         // normalized?
+			0,                                // stride
+			(void*)0                          // array buffer offset
+		);
+
+		// Draw the triangle !
+		glDrawArrays(GL_TRIANGLES, 0, 896 * 3); // 12*3 indices starting at 0 -> 12 triangles
+
+		glDisableVertexAttribArray(0);
+		glDisableVertexAttribArray(1);
+
+		// Swap buffers
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+
+	} // Check if the ESC key was pressed or the window was closed
+	while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
+		glfwWindowShouldClose(window) == 0);
+
+	// Cleanup VBO and shader
+	glDeleteBuffers(1, &vertexbuffer);
+	glDeleteBuffers(1, &colorbuffer);
+	glDeleteProgram(programID);
+	glDeleteVertexArrays(1, &VertexArrayID);
+
+	// Close OpenGL window and terminate GLFW
+	glfwTerminate();
+
+	return 0;
 }
-void CreateShaders(void)
-{
 
-	//MAKES AND ADDS ON THE SHADERS AND PUTS IT ON THE VBO
-	VertexShaderId = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(VertexShaderId, 1, &VertexShader, NULL);
-	glCompileShader(VertexShaderId);
-
-	FragmentShaderId = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(FragmentShaderId, 1, &FragmentShader, NULL);
-	glCompileShader(FragmentShaderId);
-
-	ProgramId = glCreateProgram();
-	glAttachShader(ProgramId, VertexShaderId);
-	glAttachShader(ProgramId, FragmentShaderId);
-	glLinkProgram(ProgramId);
-	glUseProgram(ProgramId);
-	void CreateVBO(void);
-
-}
