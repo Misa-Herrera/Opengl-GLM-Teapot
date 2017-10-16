@@ -18,8 +18,7 @@ using namespace glm;
 
 #include <shader.hpp>
 
-GLuint programID = LoadShaders("TransformVertexShader.vertexshader", "ColorFragmentShader.fragmentshader");
-GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+
 int main(void)
 {
 	// Initialise GLFW
@@ -65,6 +64,8 @@ int main(void)
 	glBindVertexArray(VertexArrayID);
 
 
+	GLuint programID = LoadShaders("TransformVertexShader.vertexshader", "ColorFragmentShader.fragmentshader");
+	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
 	
 	glm::mat4 Projection = glm::ortho(-8.0f, 8.0f, -6.0f, 6.0f, 1.0f, 100.0f);
 
