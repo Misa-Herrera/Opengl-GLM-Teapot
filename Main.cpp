@@ -18,7 +18,8 @@ using namespace glm;
 
 #include <shader.hpp>
 
-
+GLuint programID = LoadShaders("TransformVertexShader.vertexshader", "ColorFragmentShader.fragmentshader");
+GLuint MatrixID = glGetUniformLocation(programID, "MVP");
 int main(void)
 {
 	// Initialise GLFW
@@ -36,13 +37,8 @@ int main(void)
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow(1024, 768, "Tutorial 04 - Colored Cube", NULL, NULL);
-	if (window == NULL) {
-		fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
-		getchar();
-		glfwTerminate();
-		return -1;
-	}
+	window = glfwCreateWindow(1024, 768, "Misael Herrera Homework03 ", NULL, NULL);
+	
 	glfwMakeContextCurrent(window);
 
 	// Initialize GLEW
@@ -68,9 +64,8 @@ int main(void)
 	glGenVertexArrays(1, &VertexArrayID);
 	glBindVertexArray(VertexArrayID);
 
-	GLuint programID = LoadShaders("TransformVertexShader.vertexshader", "ColorFragmentShader.fragmentshader");
 
-	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+	
 	glm::mat4 Projection = glm::ortho(-8.0f, 8.0f, -6.0f, 6.0f, 1.0f, 100.0f);
 
 	glm::mat4 View = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f),
@@ -5462,6 +5457,7 @@ int main(void)
 		0.437293,0.299200,0.405071,1.000000
 	};
 
+	
 	GLuint vertexbuffer;
 	glGenBuffers(1, &vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
@@ -5471,8 +5467,6 @@ int main(void)
 	glGenBuffers(1, &colorbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data), g_color_buffer_data, GL_STATIC_DRAW);
-
-
 
 	do {
 
@@ -5498,6 +5492,7 @@ int main(void)
 		glUseProgram(programID);
 
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
+
 
 		// 1rst attribute buffer : vertices
 		glEnableVertexAttribArray(0);
@@ -5529,9 +5524,12 @@ int main(void)
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
 
+		
+
 		// Swap buffers
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+
 
 	} // Check if the ESC key was pressed
 	while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
