@@ -18,11 +18,6 @@ using namespace glm;
 
 #include <shader.hpp>
 
-void glutKeyboardFunc(unsigned char key, int x, int y)
-{
-	if (key == 50)
-		exit(0);
-}
 
 int main(void)
 {
@@ -61,7 +56,6 @@ int main(void)
 
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-
 	// Dark blue background
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -74,10 +68,7 @@ int main(void)
 	glGenVertexArrays(1, &VertexArrayID);
 	glBindVertexArray(VertexArrayID);
 
-
 	GLuint programID = LoadShaders("TransformVertexShader.vertexshader", "ColorFragmentShader.fragmentshader");
-
-
 
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
 	glm::mat4 Projection = glm::ortho(-8.0f, 8.0f, -6.0f, 6.0f, 1.0f, 100.0f);
@@ -86,11 +77,7 @@ int main(void)
 		glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 	glm::mat4 Model = glm::mat4(1.0f);
-	glm::mat4 MVP = Projection * View * Model; 
-
-
-	void glutKeyboardFunc(char, int, int);
-
+	glm::mat4 MVP = Projection * View * Model;
 
 
 	static const GLfloat g_vertex_buffer_data[] = {
@@ -2784,7 +2771,6 @@ int main(void)
 		1.199250,2.250000,-0.510250
 	};
 
-	// One color for each vertex. They were generated randomly.
 	static const GLfloat g_color_buffer_data[] = {
 		0.810625,0.554638,0.750895,1.000000,
 		0.929004,0.635635,0.860552,1.000000,
@@ -5493,39 +5479,52 @@ int main(void)
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// Use our shader
+
+		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+		{
+			
+			GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+			glm::mat4 Projection = glm::ortho(-4.0f, 4.0f, -3.0f, 3.0f, 1.0f, 100.0f);
+
+			glm::mat4 View = glm::lookAt(glm::vec3(0.0f, 10.0f, 0.0f),
+				glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 2.0f));
+
+			glm::mat4 Model = glm::mat4(1.0f);
+			glm::mat4 MVP = Projection * View * Model;
+		}
+
+
+
 		glUseProgram(programID);
 
-		// Send our transformation to the currently bound shader, 
-		// in the "MVP" uniform
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
 		// 1rst attribute buffer : vertices
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 		glVertexAttribPointer(
-			0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
-			3,                  // size
-			GL_FLOAT,           // type
-			GL_FALSE,           // normalized?
-			0,                  // stride
-			(void*)0            // array buffer offset
+			0,                  
+			3,                  
+			GL_FLOAT,           
+			GL_FALSE,          
+			0,                  
+			(void*)0            
 		);
 
 		// 2nd attribute buffer : colors
 		glEnableVertexAttribArray(1);
 		glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
 		glVertexAttribPointer(
-			1,                                // attribute. No particular reason for 1, but must match the layout in the shader.
-			4,                                // size
-			GL_FLOAT,                         // type
-			GL_FALSE,                         // normalized?
-			0,                                // stride
-			(void*)0                          // array buffer offset
+			1,                                
+			4,                                
+			GL_FLOAT,                         
+			GL_FALSE,                         
+			0,                                
+			(void*)0                          
 		);
 
-		// Draw the triangle !
-		glDrawArrays(GL_TRIANGLES, 0, 896 * 3); // 12*3 indices starting at 0 -> 12 triangles
+		//draw teapot
+		glDrawArrays(GL_TRIANGLES, 0, 896 * 3); 
 
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
@@ -5534,22 +5533,17 @@ int main(void)
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
-
-	} // Check if the ESC key was pressed or the window was closed
+	} // Check if the ESC key was pressed
 	while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
 		glfwWindowShouldClose(window) == 0);
 
 	
 
-	// Cleanup VBO and shader
 	glDeleteBuffers(1, &vertexbuffer);
 	glDeleteBuffers(1, &colorbuffer);
 	glDeleteProgram(programID);
 	glDeleteVertexArrays(1, &VertexArrayID);
 
-
-
-	// Close OpenGL window and terminate GLFW
 	glfwTerminate();
 
 	return 0;
