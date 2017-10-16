@@ -18,6 +18,12 @@ using namespace glm;
 
 #include <shader.hpp>
 
+void glutKeyboardFunc(unsigned char key, int x, int y)
+{
+	if (key == 50)
+		exit(0);
+}
+
 int main(void)
 {
 	// Initialise GLFW
@@ -68,30 +74,25 @@ int main(void)
 	glGenVertexArrays(1, &VertexArrayID);
 	glBindVertexArray(VertexArrayID);
 
-	// Create and compile our GLSL program from the shaders
+
 	GLuint programID = LoadShaders("TransformVertexShader.vertexshader", "ColorFragmentShader.fragmentshader");
 
-	// Get a handle for our "MVP" uniform
+
+
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+	glm::mat4 Projection = glm::ortho(-8.0f, 8.0f, -6.0f, 6.0f, 1.0f, 100.0f);
 
-	// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
-	glm::mat4 Projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
-	// Camera matrix
+	glm::mat4 View = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f),
+		glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-
-
-	glm::mat4 View = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-
-
-
-	// Model matrix : an identity matrix (model will be at the origin)
 	glm::mat4 Model = glm::mat4(1.0f);
-	// Our ModelViewProjection : multiplication of our 3 matrices
-	glm::mat4 MVP = Projection * View * Model; // Remember, matrix multiplication is the other way around
+	glm::mat4 MVP = Projection * View * Model; 
 
-											   // Our vertices. Tree consecutive floats give a 3D vertex; Three consecutive vertices give a triangle.
-											   // A cube has 6 faces with 2 triangles each, so this makes 6*2=12 triangles, and 12*3 vertices
+
+	void glutKeyboardFunc(char, int, int);
+
+
+
 	static const GLfloat g_vertex_buffer_data[] = {
 		1.400000,2.250000,0.000000,
 		1.291500,2.250000,0.549500,
@@ -5485,6 +5486,8 @@ int main(void)
 	glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data), g_color_buffer_data, GL_STATIC_DRAW);
 
+
+
 	do {
 
 		// Clear the screen
@@ -5531,9 +5534,12 @@ int main(void)
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
+
 	} // Check if the ESC key was pressed or the window was closed
 	while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
 		glfwWindowShouldClose(window) == 0);
+
+	
 
 	// Cleanup VBO and shader
 	glDeleteBuffers(1, &vertexbuffer);
@@ -5541,9 +5547,12 @@ int main(void)
 	glDeleteProgram(programID);
 	glDeleteVertexArrays(1, &VertexArrayID);
 
+
+
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();
 
 	return 0;
+
 }
 
