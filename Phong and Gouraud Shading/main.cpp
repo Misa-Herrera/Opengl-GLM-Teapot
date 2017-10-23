@@ -63,13 +63,6 @@ int main(void)
 	GLuint programID = LoadShaders("TransformVertexShader.vertexshader", "ColorFragmentShader.fragmentshader");
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
 
-	/*glm::mat4 Projection = glm::ortho(-8.0f, 8.0f, -6.0f, 6.0f, 1.0f, 100.0f);
-
-	glm::mat4 View = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f),
-	glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-	glm::mat4 Model = glm::mat4(1.0f);
-	glm::mat4 MVP = Projection * View * Model;*/
 
 
 	static const GLfloat g_vertex_buffer_data[] =
@@ -5458,7 +5451,7 @@ int main(void)
 	};
 
 
-	
+
 
 	GLuint vertexbuffer;
 	glGenBuffers(1, &vertexbuffer);
@@ -5600,4 +5593,3 @@ int main(void)
 	return 0;
 
 }
-
