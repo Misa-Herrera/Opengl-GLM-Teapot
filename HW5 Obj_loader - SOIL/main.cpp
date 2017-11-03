@@ -45,90 +45,6 @@ LightArrayID;
 
 
 
-
-const GLchar* VertexShaderG = R"glsl(
-#version 330
-layout(location = 0) in vec3 VertexPosition;
-layout(location = 1) in vec4 in_Color;
-layout(location = 2) in vec3 VertexNormal;
- 
-out vec4 ex_Color;
-
-uniform mat4 ModelViewMatrix;
-uniform mat4 NormalMatrix;
-uniform mat4 MVP;
- 
-struct light{
-	vec3 dir;
-	vec3 col;
-};
-
-
-void main()
-{
-	float ka = 0.1f;
-	float kd = 0.3f;
-	float ks = 0.6f;
-	float sp = 3.0f;
-
-	light lights[3];
-
-	lights[0].dir = vec3(0.f, -1.f, 0.f);
-	lights[1].dir = vec3(-1.f, 0.f, 0.f);
-	lights[2].dir = vec3(0.f, 0.f, -1.f);
-
-	lights[0].col = vec3(1.f, 0.1f, 0.1f);
-	lights[1].col = vec3(0.1f, 1.f, 0.1f);
-	lights[2].col = vec3(0.1f, 0.1f, 1.f);
-
-	
-	vec3 ambientSum = vec3(0);
-	vec3 diffuseSum = vec3(0);
-	vec3 specSum = vec3(0);
-
-	vec3 ambient, diffuse, specular;
-	
-	vec3 N = normalize(vec3(NormalMatrix*vec4(VertexNormal,0)));
-	vec3 V = normalize(- vec3( ModelViewMatrix * vec4( VertexPosition, 1 ) ) );
-
-	ambientSum = ka*vec3(in_Color);
-
-	for(int i=0;i<3;i++)
-		{			
-			vec3 L = normalize(vec3(ModelViewMatrix * -vec4(lights[i].dir,0)));
-			float diff = max(dot(N,L),0.0f);
-			diffuse =  kd*diff * lights[i].col ;
-			diffuseSum += diffuse;
-
-			vec3 R = reflect(-L,N);
-			specular = lights[i].col * ks * pow( max( dot(R,V), 0.0), sp);
-			specSum += specular;
-
-		}	
-	
-	gl_Position = MVP * vec4( VertexPosition, 1 );
-	ex_Color = vec4(ambientSum + diffuseSum + specSum,1);
-}
-)glsl";
-
-
-
-
-const GLchar* FragmentShaderG = R"glsl(
-#version 330 core
-
-in vec4 ex_Color;
-out vec4 FragColor;
-
-void main()
-{
-   FragColor = ex_Color;
-}
-
-)glsl";
-
-
-
 const GLchar* VertexShader = R"glsl(
 #version 330
 layout(location = 0) in vec3 VertexPosition;
@@ -244,6 +160,7 @@ void viewChange(unsigned char key, int xmouse, int ymouse);
 
 int main(int argc, char* argv[])
 {
+
 	objl::Loader Loader;
 	bool loudout = Loader.LoadFile("teapot2.obj");
 	for (int i = 0; i < Loader.LoadedMeshes.size(); i++)
@@ -251,14 +168,24 @@ int main(int argc, char* argv[])
 		objl::Mesh curMesh = Loader.LoadedMeshes[i];
 	}
 
-	GLuint tex_2d = SOIL_load_OGL_texture(
-		"brick.png",
-		SOIL_LOAD_AUTO,
-		SOIL_CREATE_NEW_ID,
-		SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
-
-
 	Initialize(argc, argv);
+
+	GLuint tex;
+	glGenTextures(1, &tex);
+	glBindTexture(GL_TEXTURE_2D, tex);
+
+	int width, height;
+	unsigned char* image = SOIL_load_image("brick.png", &width, &height, 0, SOIL_LOAD_RGB);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	SOIL_free_image_data(image);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+
+
 
 	glutMainLoop();
 
@@ -580,35 +507,8 @@ void viewChange(unsigned char key, int xmouse, int ymouse)
 	vec3 eye, opt, upv;
 	DestroyShaders();
 	switch (key) {
+
 	case '1':
-		CreateShaders(VertexShaderG, FragmentShaderG);
-		proj = ortho(-2.4f, 2.4f, -1.8f, 1.8f, 1.f, 50.f);
-
-		eye = { 10.f,10.f,10.f };
-		opt = { 0.f,0.f,0.f };
-		upv = { 0.f,1.f,0.f };
-
-		cam = lookAt(eye, opt, upv);
-		model = translate(mat4(1.f), vec3(0.f, -1.f, 0.f));
-		MVMatrix = cam*model;
-		normalMatrix = transpose(inverse(MVMatrix));
-
-		break;
-	case '2':
-		CreateShaders(VertexShaderG, FragmentShaderG);
-		proj = perspective(radians(50.f), 4.f / 3.f, 1.f, 50.f);
-
-		eye = { 3.f,3.f,3.f };
-		opt = { 0.f,0.f,0.f };
-		upv = { 0.f,1.f,0.f };
-
-		cam = lookAt(eye, opt, upv);
-		model = translate(rotate(mat4(1.f), radians(45.f), vec3(1.f, 0.f, 0.f)), vec3(0.f, -1.f, 0.f));
-		MVMatrix = cam*model;
-		normalMatrix = transpose(inverse(MVMatrix));
-
-		break;
-	case '3':
 		CreateShaders(VertexShader, FragmentShader);
 		proj = ortho(-2.4f, 2.4f, -1.8f, 1.8f, 1.f, 50.f);
 
@@ -622,7 +522,7 @@ void viewChange(unsigned char key, int xmouse, int ymouse)
 		normalMatrix = transpose(inverse(MVMatrix));
 
 		break;
-	case '4':
+	case '2':
 		CreateShaders(VertexShader, FragmentShader);
 		proj = perspective(radians(50.f), 4.f / 3.f, 1.f, 50.f);
 
