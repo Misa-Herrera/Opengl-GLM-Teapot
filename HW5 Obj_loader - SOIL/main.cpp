@@ -161,6 +161,7 @@ void viewChange(unsigned char key, int xmouse, int ymouse);
 int main(int argc, char* argv[])
 {
 
+
 	objl::Loader Loader;
 	bool loudout = Loader.LoadFile("teapot2.obj");
 	for (int i = 0; i < Loader.LoadedMeshes.size(); i++)
@@ -179,11 +180,10 @@ int main(int argc, char* argv[])
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	SOIL_free_image_data(image);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
 
 	glutMainLoop();
 
@@ -221,9 +221,7 @@ void Initialize(int argc, char* argv[])
 
 	CreateShaders(VertexShader, FragmentShader);
 	CreateVBO();
-
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-
+	glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
 }
 
 void InitWindow(int argc, char* argv[])
@@ -508,30 +506,17 @@ void viewChange(unsigned char key, int xmouse, int ymouse)
 
 	case '1':
 		CreateShaders(VertexShader, FragmentShader);
-		proj = ortho(-2.4f, 2.4f, -1.8f, 1.8f, 1.f, 50.f);
+		proj = ortho(-24.f, 24.f, -18.f, 18.f, 1.f, 500.f);
 
-		eye = { 10.f,10.f,10.f };
+		eye = { 10.f,50.f,100.f };
 		opt = { 0.f,0.f,0.f };
 		upv = { 0.f,1.f,0.f };
 
 		cam = lookAt(eye, opt, upv);
-		model = translate(mat4(1.f), vec3(0.f, -1.f, 0.f));
+		model = translate(mat4(1.f), vec3(0.f, -10.f, 0.f));
 		MVMatrix = cam*model;
 		normalMatrix = transpose(inverse(MVMatrix));
 
-		break;
-	case '2':
-		CreateShaders(VertexShader, FragmentShader);
-		proj = perspective(radians(50.f), 4.f / 3.f, 1.f, 50.f);
-
-		eye = { 3.f,3.f,3.f };
-		opt = { 0.f,0.f,0.f };
-		upv = { 0.f,1.f,0.f };
-
-		cam = lookAt(eye, opt, upv);
-		model = translate(rotate(mat4(1.f), radians(45.f), vec3(1.f, 0.f, 0.f)), vec3(0.f, -1.f, 0.f));
-		MVMatrix = cam*model;
-		normalMatrix = transpose(inverse(MVMatrix));
 		break;
 
 	default:
@@ -549,5 +534,4 @@ void viewChange(unsigned char key, int xmouse, int ymouse)
 
 	glutPostRedisplay();
 }
-
 
